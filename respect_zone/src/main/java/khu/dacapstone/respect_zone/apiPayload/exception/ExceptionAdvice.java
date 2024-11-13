@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import jakarta.validation.ConstraintViolationException;
 import khu.dacapstone.respect_zone.apiPayload.ApiResponse;
 import khu.dacapstone.respect_zone.apiPayload.code.ErrorStatus;
+import khu.dacapstone.respect_zone.apiPayload.exception.handler.socket.WebSocketHandshakeException;
 import khu.dacapstone.respect_zone.web.dto.ErrorReasonDto;
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,6 +70,14 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
         String errorMessage = "필수 헤더가 누락되었습니다: " + e.getHeaderName();
         return handleExceptionInternalFalse(e, ErrorStatus._MISSING_REQUEST_HEADER, HttpHeaders.EMPTY,
                 HttpStatus.BAD_REQUEST, request, errorMessage);
+    }
+
+    @ExceptionHandler(WebSocketHandshakeException.class)
+    public ResponseEntity<Object> handleWebSocketHandshakeException(WebSocketHandshakeException e, WebRequest request) {
+        log.error("WebSocket Handshake 실패: {}", e.getMessage());
+
+        return handleExceptionInternalFalse(e, ErrorStatus._BAD_REQUEST, HttpHeaders.EMPTY,
+                HttpStatus.BAD_REQUEST, request, e.getMessage());
     }
 
     private ResponseEntity<Object> handleExceptionInternal(Exception e, ErrorReasonDto reason,

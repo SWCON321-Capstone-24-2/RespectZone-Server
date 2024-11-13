@@ -32,7 +32,11 @@ public enum ErrorStatus implements BaseErrorCode {
     // Food Category 못 찾음
     FOOD_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "FOOD_CATEGORY4001", "해당 음식 카테고리가 없습니다"),
     // Temp 관련 응답
-    TEMP_EXCEPTION(HttpStatus.BAD_REQUEST, "TEMP4001", "이거는 테스트 예외입니다.");
+    TEMP_EXCEPTION(HttpStatus.BAD_REQUEST, "TEMP4001", "이거는 테스트 예외입니다."),
+
+    // WebSocket 관련 에러 추가
+    WEBSOCKET_HANDSHAKE_FAILED(HttpStatus.BAD_REQUEST, "WS4001", "WebSocket 연결 실패"),
+    WEBSOCKET_MISSING_HEADERS(HttpStatus.BAD_REQUEST, "WS4002", "필수 WebSocket 헤더가 누락됨");
 
     private final HttpStatus httpStatus;
     private final String code;
