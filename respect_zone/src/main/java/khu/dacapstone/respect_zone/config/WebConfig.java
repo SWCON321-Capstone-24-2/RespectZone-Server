@@ -30,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     // TODO: 나중에 허용할 도메인 지정해야 함
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOriginPatterns("*") // 개발 환경용 설정
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")

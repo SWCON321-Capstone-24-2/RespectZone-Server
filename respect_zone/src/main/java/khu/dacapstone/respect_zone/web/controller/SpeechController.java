@@ -117,7 +117,7 @@ public class SpeechController {
             Speech speech = speechQueryService.getSpeech(id, deviceId);
 
             Sentence sentence = sentenceCommandService.saveSentence(
-                    speech,
+                    speech.getId(),
                     requestDto.getSentence(),
                     SentenceType.GOOD_SENTENCE,
                     requestDto.getTimestamp());
