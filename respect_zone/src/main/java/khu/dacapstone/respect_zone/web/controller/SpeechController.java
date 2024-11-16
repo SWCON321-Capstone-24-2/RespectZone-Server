@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import khu.dacapstone.respect_zone.apiPayload.ApiResponse;
 import khu.dacapstone.respect_zone.domain.Sentence;
 import khu.dacapstone.respect_zone.domain.Speech;
+import khu.dacapstone.respect_zone.domain.enums.SentenceType;
 import khu.dacapstone.respect_zone.repository.SpeechRepository;
 import khu.dacapstone.respect_zone.service.SentenceCommandService;
 import khu.dacapstone.respect_zone.service.SentenceQueryService;
@@ -157,12 +158,14 @@ public class SpeechController {
             SentenceAnalysisResponseDto analysisResult = convertedResult.toSentenceAnalysisResponseDto(speechId,
                     requestDto.getSentence());
 
-            // Sentence 저장
-            Sentence sentence = sentenceCommandService.saveSentence(
-                    speechId,
-                    requestDto.getSentence(),
-                    analysisResult.getSentenceType(),
-                    requestDto.getTimestamp());
+            // GOOD_SENTENCE가 아닌 경우에만 저장
+            if (analysisResult.getSentenceType() != SentenceType.GOOD_SENTENCE) {
+                Sentence sentence = sentenceCommandService.saveSentence(
+                        speechId,
+                        requestDto.getSentence(),
+                        analysisResult.getSentenceType(),
+                        requestDto.getTimestamp());
+            }
 
             return ApiResponse.onSuccess(analysisResult);
 
