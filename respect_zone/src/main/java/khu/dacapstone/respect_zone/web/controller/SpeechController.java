@@ -1,7 +1,12 @@
 package khu.dacapstone.respect_zone.web.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,16 +15,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import khu.dacapstone.respect_zone.apiPayload.ApiResponse;
 import khu.dacapstone.respect_zone.domain.Sentence;
 import khu.dacapstone.respect_zone.domain.Speech;
-import khu.dacapstone.respect_zone.domain.enums.SentenceType;
 import khu.dacapstone.respect_zone.repository.SpeechRepository;
 import khu.dacapstone.respect_zone.service.SentenceCommandService;
 import khu.dacapstone.respect_zone.service.SentenceQueryService;
 import khu.dacapstone.respect_zone.service.SpeechCommandService;
 import khu.dacapstone.respect_zone.service.SpeechQueryService;
+import khu.dacapstone.respect_zone.web.dto.ModelApiResponseDto;
+import khu.dacapstone.respect_zone.web.dto.SentenceAnalysisNoKafkaResponseDto;
+import khu.dacapstone.respect_zone.web.dto.SentenceAnalysisResponseDto;
 import khu.dacapstone.respect_zone.web.dto.SentenceRequestDto;
 import khu.dacapstone.respect_zone.web.dto.SentenceResponseDto;
 import khu.dacapstone.respect_zone.web.dto.SpeechRequestDto;
@@ -34,6 +42,13 @@ public class SpeechController {
     private final SentenceQueryService sentenceQueryService;
     private final SpeechCommandService speechCommandService;
     private final SentenceCommandService sentenceCommandService;
+
+    @Value("${model.api.url}") // 환경 변수 주입
+    private String modelApiUrl;
+
+    // RestTemplate 빈 주입
+    @Autowired
+    private RestTemplate restTemplate;
 
     public SpeechController(SpeechRepository repository, SpeechQueryService speechQueryService,
             SentenceQueryService sentenceQueryService, SpeechCommandService speechCommandService,
@@ -107,28 +122,52 @@ public class SpeechController {
     }
 
     // 녹음 중에 Sentence를 받아서 저장하는 메서드
-    @PostMapping("/{id}/sentence")
-    public ApiResponse<SentenceResponseDto.saveSentenceDto> saveSentence(
-            @PathVariable Long id,
+    @PostMapping("/{speechId}/sentence")
+    public ApiResponse<SentenceAnalysisResponseDto> saveSentence(
+            @PathVariable("speechId") Long speechId,
             @RequestHeader("deviceId") String deviceId,
             @RequestBody SentenceRequestDto.saveSentenceDto requestDto) {
         try {
-            speechQueryService.checkSpeech(id, deviceId);
-            Speech speech = speechQueryService.getSpeech(id, deviceId);
+            speechQueryService.checkSpeech(speechId, deviceId);
+            Speech speech = speechQueryService.getSpeech(speechId, deviceId);
 
+            // 모델 API 요청 데이터 구성
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("text", requestDto.getSentence());
+            requestBody.put("speechId", speechId.toString());
+            requestBody.put("timestamp", requestDto.getTimestamp().toString());
+
+            // 모델 API 호출
+            ResponseEntity<ModelApiResponseDto> modelResponse = restTemplate.postForEntity(
+                    modelApiUrl + "/predict_text",
+                    requestBody,
+                    ModelApiResponseDto.class);
+
+            if (!modelResponse.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("모델 API 호출 실패");
+            }
+
+            // 분석 결과 변환
+            ModelApiResponseDto rawResult = modelResponse.getBody();
+            SentenceAnalysisNoKafkaResponseDto convertedResult = new SentenceAnalysisNoKafkaResponseDto(
+                    rawResult.getPred_label(),
+                    rawResult.getPred_score(),
+                    rawResult.getScores());
+
+            SentenceAnalysisResponseDto analysisResult = convertedResult.toSentenceAnalysisResponseDto(speechId,
+                    requestDto.getSentence());
+
+            // Sentence 저장
             Sentence sentence = sentenceCommandService.saveSentence(
-                    speech.getId(),
+                    speechId,
                     requestDto.getSentence(),
-                    SentenceType.GOOD_SENTENCE,
+                    analysisResult.getSentenceType(),
                     requestDto.getTimestamp());
 
-            return ApiResponse.onSuccess(
-                    SentenceResponseDto.saveSentenceDto.builder()
-                            .sentence(sentence.getText())
-                            .type(sentence.getType())
-                            .build());
+            return ApiResponse.onSuccess(analysisResult);
+
         } catch (Exception e) {
-            return ApiResponse.onFailure("500", "Sentence 저장에 실패했습니다.", null);
+            return ApiResponse.onFailure("500", "Sentence 분석 및 저장에 실패했습니다: " + e.getMessage(), null);
         }
     }
 
