@@ -14,6 +14,6 @@ public interface SpeechRepository extends JpaRepository<Speech, Long> {
     Optional<Speech> findByIdAndDeviceId(Long id, String deviceId);
 
     // sentences를 제외한 Speech 데이터를 가져오는 메서드
-    @Query("SELECT new khu.dacapstone.respect_zone.domain.Speech(s.id, s.deviceId, s.createdAt, s.recordingTime, s.burningCount) FROM Speech s WHERE s.deviceId = :deviceId")
+    @Query("SELECT new khu.dacapstone.respect_zone.domain.Speech(s.id, s.deviceId, s.createdAt, s.recordingTime, s.burningCount, s.sentenceCount) FROM Speech s WHERE s.deviceId = :deviceId")
     List<Speech> findByDeviceId(@Param("deviceId") String deviceId);
 }

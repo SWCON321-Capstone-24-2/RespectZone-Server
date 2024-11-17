@@ -43,12 +43,21 @@ public class Speech {
     @OneToMany(mappedBy = "speech", orphanRemoval = true)
     private List<Sentence> sentences;
 
-    public Speech(Long id, String deviceId, LocalDateTime createdAt, LocalTime recordingTime, Long burningCount) {
+    @Column(name = "sentence_count", columnDefinition = "integer default 0")
+    private Integer sentenceCount = 0;
+
+    public Speech(Long id, String deviceId, LocalDateTime createdAt, LocalTime recordingTime, Long burningCount,
+            Integer sentenceCount) {
         this.id = id;
         this.deviceId = deviceId;
         this.createdAt = createdAt;
         this.recordingTime = recordingTime;
         this.burningCount = burningCount;
+        this.sentenceCount = sentenceCount;
+    }
+
+    public void incrementSentenceCount() {
+        this.sentenceCount = (this.sentenceCount == null) ? 1 : this.sentenceCount + 1;
     }
 
 }

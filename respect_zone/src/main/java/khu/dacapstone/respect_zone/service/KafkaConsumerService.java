@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import khu.dacapstone.respect_zone.apiPayload.ApiResponse;
+import khu.dacapstone.respect_zone.domain.Speech;
 import khu.dacapstone.respect_zone.domain.enums.SentenceType;
+import khu.dacapstone.respect_zone.repository.SpeechRepository;
 import khu.dacapstone.respect_zone.web.dto.SentenceAnalysisResponseDto;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,14 +25,17 @@ public class KafkaConsumerService {
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
     private final SentenceCommandService sentenceCommandService;
+    private final SpeechRepository speechRepository;
 
     public KafkaConsumerService(
             SimpMessagingTemplate messagingTemplate,
             ObjectMapper objectMapper,
-            SentenceCommandService sentenceCommandService) {
+            SentenceCommandService sentenceCommandService,
+            SpeechRepository speechRepository) {
         this.messagingTemplate = messagingTemplate;
         this.objectMapper = objectMapper;
         this.sentenceCommandService = sentenceCommandService;
+        this.speechRepository = speechRepository;
     }
 
     @KafkaListener(topics = "text.abuse", groupId = "respect-zone-group")
@@ -98,6 +103,12 @@ public class KafkaConsumerService {
                     log.error("Error saving sentence to DB: {}", e.getMessage());
                 }
             }
+
+            // Speech 조회 및 카운트 증가
+            Speech speech = speechRepository.findById(speechId)
+                    .orElseThrow(() -> new RuntimeException("Speech not found"));
+            speech.incrementSentenceCount();
+            speechRepository.save(speech);
 
             log.info("Processed message from Kafka: {}", message);
         } catch (Exception e) {
