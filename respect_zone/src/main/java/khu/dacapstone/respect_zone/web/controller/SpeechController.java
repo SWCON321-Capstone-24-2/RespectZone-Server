@@ -86,7 +86,7 @@ public class SpeechController {
     // id와 deviceId를 기반으로 Speech 데이터를 삭제하는 메서드
     @DeleteMapping("/{id}")
     public ApiResponse<SpeechResponseDto.deleteResultDto> deleteSpeechById(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestHeader("deviceId") String deviceId) {
         speechQueryService.deleteSpeech(id, deviceId);
         return ApiResponse.onSuccess(
@@ -98,7 +98,7 @@ public class SpeechController {
     // deviceId에 해당하는 Speech 목록을 불러온 상황에서, 특정 Speech id의 Sentence 목록을 가져오는 메서드
     @GetMapping("/{id}/sentences")
     public ApiResponse<SentenceResponseDto.getSentencesBySpeechIdDto> getSentencesBySpeechId(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestHeader("deviceId") String deviceId) {
         speechQueryService.checkSpeech(id, deviceId);
         List<Sentence> sentences = sentenceQueryService.getSentencesBySpeechId(id, deviceId);
@@ -125,7 +125,7 @@ public class SpeechController {
     // 녹음 중에 Sentence를 받아서 저장하는 메서드
     @PostMapping("/{speechId}/sentence")
     public ApiResponse<SentenceAnalysisResponseDto> saveSentence(
-            @PathVariable("speechId") Long speechId,
+            @PathVariable(name = "speechId") Long speechId,
             @RequestHeader("deviceId") String deviceId,
             @RequestBody SentenceRequestDto.saveSentenceDto requestDto) {
         try {
@@ -177,7 +177,7 @@ public class SpeechController {
     // 녹음이 끝났을 때 Speech 객체를 최종적으로 저장하는 메서드
     @PostMapping("/{id}")
     public ApiResponse<SpeechResponseDto.saveResultDto> saveSpeech(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestHeader("deviceId") String deviceId,
             @RequestBody SpeechRequestDto.SaveSpeechDto requestDto) {
         try {

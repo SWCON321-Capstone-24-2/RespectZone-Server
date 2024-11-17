@@ -4,10 +4,10 @@ import lombok.Getter;
 
 public enum SentenceType {
     GOOD_SENTENCE("clean"),
-    GENDER_HATE("성별"),
-    AGE_HATE("연령"),
-    OTHER_HATE("기타혐오"),
-    SWEAR_EXPRESSION("악플/욕설");
+    GENDER_HATE("gender"),
+    AGE_HATE("age"),
+    OTHER_HATE("other"),
+    SWEAR_EXPRESSION("swear");
 
     @Getter
     private final String value;
