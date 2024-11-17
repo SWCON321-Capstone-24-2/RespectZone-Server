@@ -1,6 +1,6 @@
 services:
   server:
-    image: gudev/respect_zone:0.1.2
+    image: gudev/respect_zone:0.1.3
     environment:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
