@@ -3,7 +3,7 @@ services:
   server:
     image: gudev/respect_zone:0.2
     environment:
-      DB_URL: ${DB_URL}
+      DB_URL: jdbc:postgresql://db:5432/respect_zone
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
