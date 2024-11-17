@@ -108,6 +108,24 @@ public class KafkaConsumerService {
             Speech speech = speechRepository.findById(speechId)
                     .orElseThrow(() -> new RuntimeException("Speech not found"));
             speech.incrementSentenceCount();
+
+            // GOOD_SENTENCE가 아닌 경우에만 swearCount 증가 및 Sentence 저장
+            if (sentenceType != SentenceType.GOOD_SENTENCE) {
+                speech.incrementSwearCount();
+                try {
+                    // Sentence 저장
+                    LocalDateTime sentenceTimestamp = LocalDateTime.parse(timestamp);
+                    sentenceCommandService.saveSentence(
+                            speechId,
+                            text,
+                            sentenceType,
+                            sentenceTimestamp);
+                    log.info("Saved hate sentence to DB: {}", text);
+                } catch (Exception e) {
+                    log.error("Error saving sentence to DB: {}", e.getMessage());
+                }
+            }
+
             speechRepository.save(speech);
 
             log.info("Processed message from Kafka: {}", message);

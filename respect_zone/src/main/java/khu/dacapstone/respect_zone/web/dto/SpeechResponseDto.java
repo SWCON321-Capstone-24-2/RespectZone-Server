@@ -26,6 +26,7 @@ public class SpeechResponseDto {
         LocalTime recordingTime;
         Long burningCount;
         int sentenceCount;
+        int swearCount;
     }
 
     @Builder

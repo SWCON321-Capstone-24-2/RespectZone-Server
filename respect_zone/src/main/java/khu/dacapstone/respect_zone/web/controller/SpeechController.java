@@ -160,16 +160,18 @@ public class SpeechController {
 
             // 모든 문장에 대해 카운트 증가
             speech.incrementSentenceCount();
-            repository.save(speech);
 
-            // GOOD_SENTENCE가 아닌 경우에만 Sentence 엔티티 저장
+            // GOOD_SENTENCE가 아닌 경우에만 swearCount 증가 및 Sentence 엔티티 저장
             if (analysisResult.getSentenceType() != SentenceType.GOOD_SENTENCE) {
+                speech.incrementSwearCount();
                 Sentence sentence = sentenceCommandService.saveSentence(
                         speechId,
                         requestDto.getSentence(),
                         analysisResult.getSentenceType(),
                         requestDto.getTimestamp());
             }
+
+            repository.save(speech);
 
             return ApiResponse.onSuccess(analysisResult);
 
@@ -192,6 +194,7 @@ public class SpeechController {
                     .recordingTime(savedSpeech.getRecordingTime())
                     .burningCount(savedSpeech.getBurningCount())
                     .sentenceCount(savedSpeech.getSentenceCount())
+                    .swearCount(savedSpeech.getSwearCount())
                     .build());
         } catch (Exception e) {
             return ApiResponse.onFailure("500", "Speech 저장에 실패했습니다.", null);
