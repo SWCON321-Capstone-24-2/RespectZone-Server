@@ -37,7 +37,7 @@ services:
       - respect_zone_network
 
   model:
-    image: gudev/respect_zone-model:1.1
+    image: gudev/respect_zone-model:2.0
     ports:
       - "5001:5001"
     networks:
