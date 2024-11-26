@@ -1,7 +1,7 @@
 version: '3'
 services:
   server:
-    image: gudev/respect_zone:0.2
+    image: gudev/respect_zone:1.0
     environment:
       DB_URL: jdbc:postgresql://db:5432/respect_zone
       DB_USERNAME: ${DB_USERNAME}
