@@ -36,7 +36,7 @@ public class Sentence {
     @JoinColumn(name = "speech_id", nullable = false)
     private Speech speech;
 
-    @Column(name = "text", nullable = false)
+    @Column(name = "text", length = 1024, nullable = false)
     private String text;
 
     @Enumerated(EnumType.STRING)
